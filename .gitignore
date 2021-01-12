@@ -11,3 +11,5 @@ Cargo.lock
 
 # test_dir
 bcl_oxide_cli/
+
+.idea/
