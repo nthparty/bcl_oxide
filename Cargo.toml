@@ -1,0 +1,8 @@
+[package]
+name = "bcl_oxide"
+version = "0.1.0"
+authors = []
+edition = "2018"
+
+[dependencies]
+sodiumoxide = { path = "../../LIBS/sodiumoxide"}
