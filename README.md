@@ -10,8 +10,9 @@ and is designed to provide the same functionalities for applications written in 
 ## Package Installation
 
 This package requires [sodiumoxide](https://github.com/sodiumoxide/sodiumoxide), which
-must be installed manually. Once installed, edit the `path` variable in `Cargo.toml` to
-point to the library's root directory.
+must be installed manually (`cargo install` can find the package, but can't install for 
+some reason, I'm trying to figure out why). Once installed, edit the `path` variable in 
+this repository's `Cargo.toml` file to point to the root directory of `sodiumoxide`.
 
 ## Examples
 
