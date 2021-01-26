@@ -23,37 +23,29 @@ use bcl_oxide::symmetric::Symmetric;
 use std::str;
 
 fn main() {
+    
     let k = Symmetric::secret();
     println!("Key: {:?}", k);
 
-    let n = Symmetric::nonce();
-    println!("Nonce: {:?}", n);
-
-    let ct = Symmetric::encrypt(b"Hi", &n, &k);
+    let msg = String::from("Hello");
+    println!("Msg: {}", msg);
+    let ct = Symmetric::encrypt(&msg.into_bytes(), &k);
     println!("Ciphertext: {:?}", ct);
 
-    let ot = Symmetric::decrypt(&ct, &n, &k);
-    println!("Opened: {:?}", ot);
-
-    let uw = ot.unwrap();
-    println!("Unwrapped: {:?}", uw);
-
-    let pt = match str::from_utf8(&uw) {
+    let ot = Symmetric::decrypt(&ct, &k).unwrap();
+    let pt = match str::from_utf8(&ot) {
         Ok(v) => v,
         _ => "err"
     };
-
-    println!("Result: {}", pt);
+    println!("Decrypted: {}", pt);
 }
 
 /*
-Output: 
+Output:
 Key: Key(****)
-Nonce: Nonce([220, 105, 74, 167, 178, 31, 61, 209, 173, 35, 48, 79, 162, 220, 37, 144, 91, 110, 152, 85, 163, 212, 169, 232])
-Ciphertext: [10, 233, 212, 132, 3, 225, 27, 91, 148, 223, 21, 240, 217, 103, 78, 162, 195, 100]
-Opened: Ok([72, 105])
-Unwrapped: [72, 105]
-Result: Hi
+Msg: Hello
+Ciphertext: [107, 91, 51, 83, 63, 0, 12, 103, 33, 131, 168, 188, 77, 146, 33, 254, 8, 13, 67, 80, 119, 136, 7, 147, 134, 165, 154, 188, 134, 35, 242, 1, 255, 254, 90, 34, 23, 223, 140, 76, 140, 21, 6, 70, 51]
+Decrypted: Hello
  */
 ```
 
@@ -65,40 +57,31 @@ use bcl_oxide::symmetric::Asymmetric;
 use std::str;
 
 fn main() {
-    let (mypk, mysk) = Asymmetric::secret();
-    println!("My keys: {:?} {:?}", mypk, mysk);
-
-    let (otherpk, othersk) = Asymmetric::secret();
+    
+    let (mypk, mysk) = Asymmetric::key_pair();
+    println!("My keys: {:?} {:?}", mypk, mysk.0);
+    let (otherpk, othersk) = Asymmetric::key_pair();
     println!("Their keys: {:?} {:?}", otherpk, othersk);
 
-    let n = Asymmetric::nonce();
-    println!("Nonce: {:?}", n);
-
-    let ct = Asymmetric::encrypt(b"Hello", &n, &otherpk, &mysk);
+    let msg = String::from("Hello");
+    println!("Msg: {}", msg);
+    let ct = Asymmetric::encrypt(&msg.into_bytes(), &otherpk, &mysk);
     println!("Ciphertext: {:?}", ct);
 
-    let ot = Asymmetric::decrypt(&ct, &n, &mypk, &othersk);
-    println!("Opened: {:?}", ot);
-
-    let uw = ot.unwrap();
-    println!("Unwrapped: {:?}", uw);
-
-    let pt = match str::from_utf8(&uw) {
+    let ot = Asymmetric::decrypt(&ct, &mypk, &othersk).unwrap();
+    let pt = match str::from_utf8(&ot) {
         Ok(v) => v,
         _ => "err"
     };
-
-    println!("Result: {}", pt);
+    println!("Decrypted: {}", pt);
 }
 
 /*
 Output:
-My keys: PublicKey([104, 216, 185, 202, 170, 145, 215, 121, 207, 25, 136, 218, 140, 78, 176, 48, 41, 127, 57, 225, 248, 125, 165, 9, 200, 11, 30, 53, 53, 112, 214, 15]) SecretKey(****)
-Their keys: PublicKey([117, 123, 62, 159, 164, 223, 96, 228, 36, 254, 18, 67, 213, 200, 246, 127, 61, 125, 56, 92, 186, 123, 135, 8, 36, 19, 18, 165, 16, 248, 58, 21]) SecretKey(****)
-Nonce: Nonce([118, 230, 44, 13, 23, 41, 160, 45, 110, 13, 179, 171, 83, 72, 144, 191, 241, 232, 114, 155, 247, 140, 37, 125])
-Ciphertext: [34, 182, 223, 162, 14, 140, 174, 42, 94, 22, 196, 74, 233, 170, 44, 232, 146, 244, 107, 87, 185]
-Opened: Ok([72, 101, 108, 108, 111])
-Unwrapped: [72, 101, 108, 108, 111]
-Result: Hello
+My keys: PublicKey([129, 165, 84, 54, 216, 8, 150, 143, 177, 172, 79, 252, 209, 185, 208, 127, 112, 242, 99, 222, 138, 78, 139, 114, 124, 172, 247, 173, 88, 54, 215, 71]) [59, 66, 70, 230, 67, 180, 175, 72, 179, 44, 157, 130, 113, 254, 13, 151, 81, 152, 36, 236, 121, 175, 249, 244, 95, 144, 197, 44, 146, 173, 76, 57]
+Their keys: PublicKey([66, 45, 142, 180, 165, 59, 78, 249, 159, 38, 78, 29, 24, 248, 108, 98, 10, 52, 228, 223, 105, 167, 14, 13, 200, 140, 57, 176, 128, 243, 60, 53]) SecretKey(****)
+Msg: Hello
+Ciphertext: [186, 120, 72, 228, 251, 123, 25, 166, 226, 165, 32, 88, 200, 169, 116, 113, 97, 176, 21, 219, 214, 242, 82, 67, 110, 161, 95, 158, 16, 183, 242, 218, 209, 251, 102, 68, 151, 249, 188, 57, 208, 54, 249, 17, 101]
+Decrypted: Hello
  */
 ```
