@@ -86,3 +86,15 @@ Ciphertext: [186, 120, 72, 228, 251, 123, 25, 166, 226, 165, 32, 88, 200, 169, 1
 Decrypted: Hello
  */
 ```
+
+Alternatively, you generate key pairs from a supplied 32-byte array:
+
+```rust
+    let mut my_sk: [u8; 32] = [0; 32];
+    let my_sk = Asymmetric::to_secret(&mut my_sk);
+    let my_pk = Asymmetric::public(&sk);
+
+    let mut their_sk: [u8; 32] = [0; 32];
+    let their_sk = Asymmetric::to_secret(&mut their_sk);
+    let my_pk = Asymmetric::public(&their_sk);
+```

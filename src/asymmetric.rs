@@ -7,12 +7,15 @@ impl Asymmetric {
 
     pub fn key_pair() -> (box_::PublicKey, box_::SecretKey) { box_::gen_keypair() }
 
-    pub fn public(sk: &mut [u8;32]) -> box_::PublicKey {
+    pub fn to_secret(sk: &mut [u8;32]) -> box_::SecretKey {
+        box_::SecretKey(*sk)
+    }
+
+    pub fn public(sk: &box_::SecretKey) -> box_::PublicKey {
         /*
         Generate a PublicKey for some secret key passed as bytes
          */
-        let secret_key = box_::SecretKey(*sk);
-        secret_key.public_key()
+        sk.public_key()
     }
 
     pub fn encrypt(msg: &[u8], pk: &box_::PublicKey, sk: &box_::SecretKey) -> Vec<u8> {
