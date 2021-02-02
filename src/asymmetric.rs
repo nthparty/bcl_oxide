@@ -5,23 +5,34 @@ pub struct Asymmetric {}
 
 impl Asymmetric {
 
-    pub fn key_pair() -> (box_::PublicKey, box_::SecretKey) { box_::gen_keypair() }
+    pub fn key_pair() -> ([u8; 32], [u8; 32]) {
+        let (pk, sk) = box_::gen_keypair();
+        (pk.0, sk.0)
+    }
 
-    pub fn to_secret(sk: &mut [u8;32]) -> box_::SecretKey {
+    fn to_secret_key(sk: &mut [u8;32]) -> box_::SecretKey {
         box_::SecretKey(*sk)
     }
 
-    pub fn public(sk: &box_::SecretKey) -> box_::PublicKey {
-        /*
-        Generate a PublicKey for some secret key passed as bytes
-         */
-        sk.public_key()
+    fn to_public_key(pk: &mut [u8;32]) -> box_::PublicKey {
+        box_::PublicKey(*pk)
     }
 
-    pub fn encrypt(msg: &[u8], pk: &box_::PublicKey, sk: &box_::SecretKey) -> Vec<u8> {
+    pub fn public(sk: &mut [u8; 32]) -> [u8; 32] {
+
+        let to_secret = Asymmetric::to_secret_key(sk);
+        to_secret.public_key().0
+    }
+
+    pub fn encrypt(msg: &[u8], pk: &mut [u8;32], sk: &mut [u8; 32]) -> Vec<u8> {
 
         let nonce = box_::gen_nonce();
-        let ct = box_::seal(msg, &nonce, pk, sk);
+        let ct = box_::seal(
+            msg,
+            &nonce,
+            &Asymmetric::to_public_key(pk),
+            &Asymmetric::to_secret_key(sk)
+        );
 
         let mut ret = nonce.0.to_vec();
         ret.extend(ct);
@@ -39,11 +50,15 @@ impl Asymmetric {
         box_::Nonce(n)
     }
 
-    pub fn decrypt(ct: &[u8], pk: &box_::PublicKey, sk: &box_::SecretKey)
-        -> Result<Vec<u8>, ()> {
+    pub fn decrypt(ct: &[u8], pk: &mut [u8; 32], sk: &mut [u8; 32]) -> Result<Vec<u8>, ()> {
 
         let nonce = Asymmetric::strip_nonce_from_ct(ct);
         let ct = &ct[24..];
-        box_::open(ct, &nonce, pk, sk)
+        box_::open(
+            ct,
+            &nonce,
+            &Asymmetric::to_public_key(pk),
+            &Asymmetric::to_secret_key(sk)
+        )
     }
 }

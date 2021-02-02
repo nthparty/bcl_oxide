@@ -5,12 +5,23 @@ pub struct Symmetric {}
 
 impl Symmetric {
 
-    pub fn secret() -> secretbox::Key { secretbox::gen_key() }
+    pub fn secret() -> [u8; 32] {
+        let sk = secretbox::gen_key();
+        sk.0
+    }
 
-    pub fn encrypt(msg: &[u8], k: &secretbox::Key) -> Vec<u8> {
+    fn to_secret_key(sk: &mut [u8; 32]) -> secretbox::Key {
+        secretbox::Key(*sk)
+    }
+
+    pub fn encrypt(msg: &[u8], k: &mut [u8;32]) -> Vec<u8> {
 
         let nonce = secretbox::gen_nonce();
-        let ct = secretbox::seal(msg, &nonce, k);
+        let ct = secretbox::seal(
+            msg,
+            &nonce,
+            &Symmetric::to_secret_key(k)
+        );
 
         let mut ret = nonce.0.to_vec();
         ret.extend(ct);
@@ -28,10 +39,14 @@ impl Symmetric {
         secretbox::Nonce(n)
     }
 
-    pub fn decrypt(ct: &[u8], k: &secretbox::Key) -> Result<Vec<u8>, ()> {
+    pub fn decrypt(ct: &[u8], k: &mut [u8;32]) -> Result<Vec<u8>, ()> {
 
         let nonce = Symmetric::strip_nonce_from_ct(ct);
         let ct = &ct[24..];
-        secretbox::open(ct, &nonce, k)
+        secretbox::open(
+            ct,
+            &nonce,
+            &Symmetric::to_secret_key(k)
+        )
     }
 }
